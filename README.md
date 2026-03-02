@@ -307,39 +307,34 @@ Each `handler` is self-contained: when the user goes offline, actions are queued
 
 ### Using with React Query (TanStack Query)
 
-If you already use React Query, this package works alongside it. The key: **share the same API function** for both React Query mutations and the offline queue handler.
+Use your **existing `useMutation` hook** — the handler calls `mutateAsync`. No duplicate fetch, no extra API layer. Your mutation does everything (POST, cache invalidation, etc.).
 
-**Pattern 1 — Shared API layer (recommended)**
-
-Define your API calls in one place. Use them in the offline queue `handler` and optionally in React Query's `useMutation`:
+**Pattern — Handler uses `mutateAsync` from `useMutation`**
 
 ```tsx
-// api/posts.ts
-export async function createPost(payload: { title: string; body: string }) {
-  const res = await fetch('https://api.myapp.com/posts', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
-}
-
-// CreatePostForm.tsx
-import { useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useOfflineMutation } from '@mustafaaksoy41/react-native-offline-queue';
-import { createPost } from './api/posts';
 
 function CreatePostForm() {
   const queryClient = useQueryClient();
 
+  // Your existing React Query mutation — mutationFn, onSuccess, retry, etc.
+  const { mutateAsync } = useMutation({
+    mutationFn: (payload: { title: string; body: string }) =>
+      fetch('https://api.myapp.com/posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      }).then((r) => r.json()),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['posts'] }),
+  });
+
+  // Handler = your mutation. Online: runs immediately. Offline: queued, runs when back online.
   const { mutateOffline } = useOfflineMutation('CREATE_POST', {
     handler: async (payload) => {
-      await createPost(payload);
-      queryClient.invalidateQueries({ queryKey: ['posts'] });
+      await mutateAsync(payload);
     },
     onOptimisticSuccess: (payload) => {
-      // Add to local list immediately (optimistic update)
       queryClient.setQueryData(['posts'], (old: any) =>
         old ? [...old, { ...payload, id: 'temp', pending: true }] : [payload]
       );
@@ -355,62 +350,40 @@ function CreatePostForm() {
 }
 ```
 
-**Pattern 2 — Centralized `onSyncAction` with React Query**
+**With custom hooks / API layer**
 
-Handle all actions in one place and use `queryClient` for cache updates:
+If your mutations live in custom hooks:
 
 ```tsx
-// App.tsx
-import { useQueryClient } from '@tanstack/react-query';
-import { OfflineProvider } from '@mustafaaksoy41/react-native-offline-queue';
-import { createPost, likePost } from './api';
-
-function AppWithProviders() {
+// hooks/useCreatePost.ts
+export function useCreatePost() {
   const queryClient = useQueryClient();
-
-  return (
-    <OfflineProvider
-      config={{
-        storageType: 'mmkv',
-        syncMode: 'auto',
-        onSyncAction: async (action) => {
-          switch (action.actionName) {
-            case 'CREATE_POST':
-              await createPost(action.payload);
-              queryClient.invalidateQueries({ queryKey: ['posts'] });
-              break;
-            case 'LIKE_POST':
-              await likePost(action.payload);
-              queryClient.invalidateQueries({ queryKey: ['posts'] });
-              break;
-          }
-        },
-      }}
-    >
-      <YourApp />
-    </OfflineProvider>
-  );
+  return useMutation({
+    mutationFn: api.createPost,  // your axios/fetch wrapper
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['posts'] }),
+  });
 }
 
-// Wrap with QueryClientProvider
-export default function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <AppWithProviders />
-    </QueryClientProvider>
-  );
+// CreatePostForm.tsx
+function CreatePostForm() {
+  const { mutateAsync } = useCreatePost();
+
+  const { mutateOffline } = useOfflineMutation('CREATE_POST', {
+    handler: async (payload) => await mutateAsync(payload),
+    onOptimisticSuccess: (payload) => { /* ... */ },
+  });
+
+  return <Button onPress={() => mutateOffline({ title, body })} />;
 }
 ```
 
 **Summary**
 
-| What | Use |
-|------|-----|
-| API call (fetch/axios) | Same function in both `mutationFn` and `handler` |
-| Cache invalidation | `queryClient.invalidateQueries()` inside `handler` or `onSyncAction` |
-| Optimistic updates | `onOptimisticSuccess` + `queryClient.setQueryData()` |
+| Handler does | Your mutation does |
+|--------------|--------------------|
+| Calls `mutateAsync(payload)` | POST/GET, retry, cache invalidation, error handling |
 
-React Query handles **queries** (reading data). This package handles **mutations when offline** (queue + sync). They work together.
+No duplicate logic. Same mutation for online and offline sync.
 
 ## Configuration
 
@@ -502,30 +475,93 @@ Omit `onOnlineRestore` entirely. Nothing happens — you handle sync manually th
 
 ### `useOfflineMutation(actionName, options?)`
 
-Queue-aware mutation hook. Calls the handler directly when online, queues when offline.
+Queue-aware mutation hook with built-in state tracking. Calls the handler directly when online, queues when offline.
+
+**Returns:**
 
 ```tsx
-const { mutateOffline } = useOfflineMutation('CREATE_POST', {
-  handler: async (payload) => {
-    // Your API call — runs directly when online, or during sync when offline
-    await api.createPost(payload);
-  },
-  onOptimisticSuccess: (payload) => {
-    // Runs immediately — update your local state here
-  },
-  onError: (error, payload) => {
-    // Runs if the direct API call fails while online
-  },
-});
-
-mutateOffline({ title: 'Hello', body: 'World' });
+const {
+  mutateOffline, // (payload) => Promise<void>
+  status,        // 'idle' | 'loading' | 'success' | 'error' | 'queued'
+  isIdle,        // true before any mutation
+  isLoading,     // true while the handler is running (online only)
+  isSuccess,     // true after a successful direct call
+  isError,       // true if the direct call threw (action still queued as fallback)
+  isQueued,      // true when the action was added to the offline queue
+  error,         // Error | null
+  reset,         // () => void — reset status back to idle
+} = useOfflineMutation('ACTION_NAME', options);
 ```
 
 | Option | Type | Description |
 |--------|------|-------------|
-| `handler` | `(payload) => Promise<void>` | API call for this specific action. Registered automatically. |
-| `onOptimisticSuccess` | `(payload) => void` | Fires immediately for instant UI updates |
+| `handler` | `(payload) => Promise<void>` | API call for this action. Registered automatically, used during sync. |
+| `onOptimisticSuccess` | `(payload) => void` | Fires immediately — update your local state here |
+| `onSuccess` | `(payload) => void` | Fires only after a successful direct call (online) |
 | `onError` | `(error, payload) => void` | Fires if the direct call fails while online |
+
+**With `fetch`:**
+
+```tsx
+function LikeButton({ postId }) {
+  const { mutateOffline, isLoading, isQueued } = useOfflineMutation('LIKE_POST', {
+    handler: async (payload) => {
+      await fetch('/api/likes', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+    },
+    onOptimisticSuccess: () => setLiked(true),
+  });
+
+  return (
+    <Button
+      title={isLoading ? '⏳' : isQueued ? '📡 Queued' : '❤️ Like'}
+      onPress={() => mutateOffline({ postId })}
+      disabled={isLoading}
+    />
+  );
+}
+```
+
+**With React Query:**
+
+```tsx
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+
+function LikeButton({ postId }) {
+  const queryClient = useQueryClient();
+
+  const { mutateAsync } = useMutation({
+    mutationFn: (payload) => api.likePost(payload),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['posts'] }),
+  });
+
+  const { mutateOffline, isQueued } = useOfflineMutation('LIKE_POST', {
+    handler: async (payload) => await mutateAsync(payload),
+    onOptimisticSuccess: () => {
+      queryClient.setQueryData(['posts', postId], (old) => ({
+        ...old, liked: true,
+      }));
+    },
+  });
+
+  return (
+    <Button
+      title={isQueued ? '📡 Queued' : '❤️ Like'}
+      onPress={() => mutateOffline({ postId })}
+    />
+  );
+}
+```
+
+**State flow:**
+
+| Scenario | `status` flow |
+|----------|---------------|
+| Online + success | `idle` → `loading` → `success` |
+| Online + API fails | `idle` → `loading` → `queued` (fallback) |
+| Offline | `idle` → `queued` |
 
 ### `useOfflineQueue()`
 

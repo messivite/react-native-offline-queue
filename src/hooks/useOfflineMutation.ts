@@ -1,6 +1,20 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { OfflineManager } from '../core/OfflineManager';
 import { useNetworkStatus } from '../components/OfflineProvider';
+
+export type MutationStatus = 'idle' | 'loading' | 'success' | 'error' | 'queued';
+
+export interface OfflineMutationResult<TPayload> {
+  mutateOffline: (payload: TPayload) => Promise<void>;
+  status: MutationStatus;
+  isIdle: boolean;
+  isLoading: boolean;
+  isSuccess: boolean;
+  isError: boolean;
+  isQueued: boolean;
+  error: Error | null;
+  reset: () => void;
+}
 
 export function useOfflineMutation<TPayload>(
   actionName: string,
@@ -8,11 +22,15 @@ export function useOfflineMutation<TPayload>(
     handler?: (payload: TPayload) => Promise<void>;
     onOptimisticSuccess?: (payload: TPayload) => void;
     onError?: (error: Error, payload: TPayload) => void;
+    onSuccess?: (payload: TPayload) => void;
   }
-) {
+): OfflineMutationResult<TPayload> {
   const { isOnline } = useNetworkStatus();
   const handlerRef = useRef(options?.handler);
   handlerRef.current = options?.handler;
+
+  const [status, setStatus] = useState<MutationStatus>('idle');
+  const [error, setError] = useState<Error | null>(null);
 
   // Register per-action handler (persists even after unmount)
   useEffect(() => {
@@ -23,7 +41,12 @@ export function useOfflineMutation<TPayload>(
     }
   }, [actionName]);
 
-  const mutateOffline = async (payload: TPayload) => {
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+  }, []);
+
+  const mutateOffline = useCallback(async (payload: TPayload) => {
     // Resolve which handler to use: per-action handler > global onSyncAction
     const handler = handlerRef.current || OfflineManager.getHandler(actionName);
     const globalHandler = OfflineManager.onSyncAction;
@@ -32,6 +55,8 @@ export function useOfflineMutation<TPayload>(
     if (isOnline && hasHandler) {
       // ── ONLINE: Execute directly, skip the queue ──
       if (__DEV__) console.log(`[OfflineQueue] mutate: ${actionName} (direct)`);
+      setStatus('loading');
+      setError(null);
       try {
         if (handler) {
           await handler(payload);
@@ -44,20 +69,37 @@ export function useOfflineMutation<TPayload>(
             retryCount: 0,
           });
         }
+        setStatus('success');
         options?.onOptimisticSuccess?.(payload);
-      } catch (error: any) {
-        console.warn(`[OfflineQueue] mutate: ${actionName} failed, falling back to queue`, error);
+        options?.onSuccess?.(payload);
+      } catch (err: any) {
+        console.warn(`[OfflineQueue] mutate: ${actionName} failed, falling back to queue`, err);
+        // API failed even though online → fallback to queue
         await OfflineManager.push(actionName, payload);
+        setStatus('queued');
+        setError(err);
         options?.onOptimisticSuccess?.(payload);
-        options?.onError?.(error, payload);
+        options?.onError?.(err, payload);
       }
     } else {
       // ── OFFLINE: Add to queue + optimistic update ──
       if (__DEV__) console.log(`[OfflineQueue] mutate: ${actionName} (queued)`);
       await OfflineManager.push(actionName, payload);
+      setStatus('queued');
+      setError(null);
       options?.onOptimisticSuccess?.(payload);
     }
-  };
+  }, [actionName, isOnline, options]);
 
-  return { mutateOffline };
+  return {
+    mutateOffline,
+    status,
+    isIdle: status === 'idle',
+    isLoading: status === 'loading',
+    isSuccess: status === 'success',
+    isError: status === 'error',
+    isQueued: status === 'queued',
+    error,
+    reset,
+  };
 }
