@@ -16,6 +16,8 @@
   ],
   "scripts": {
     "build": "bob build",
+    "test": "jest",
+    "test:watch": "jest --watch",
     "postinstall": "echo '\\n📦 @mustafaaksoy41/react-native-offline-queue installed!\\n⚠️  Required peer: npm install @react-native-community/netinfo\\n💡 Optional peers: react-native-mmkv | @react-native-async-storage/async-storage | realm\\n'"
   },
   "keywords": [
@@ -58,10 +60,13 @@
   },
   "devDependencies": {
     "@react-native-community/netinfo": "^11.0.0",
+    "@types/jest": "^30.0.0",
     "@types/react": "^18.2.6",
+    "jest": "^30.2.0",
     "react": "18.2.0",
     "react-native": "0.73.4",
     "react-native-builder-bob": "^0.30.0",
+    "ts-jest": "^29.4.6",
     "typescript": "^5.0.2",
     "vitepress": "^1.6.4",
     "vue": "^3.5.29"

@@ -29,6 +29,11 @@ Queue operations when offline, sync automatically or manually when connectivity 
 <!-- Core Dependency -->
 [![NetInfo](https://img.shields.io/badge/NetInfo-0088CC?style=for-the-badge&logo=wifi&logoColor=white)](https://github.com/react-native-netinfo/react-native-netinfo)
 
+<!-- CI & Testing -->
+[![Tests](https://github.com/messivite/react-native-offline-queue/actions/workflows/tests.yml/badge.svg)](https://github.com/messivite/react-native-offline-queue/actions/workflows/tests.yml)
+[![Jest](https://img.shields.io/badge/tested_with-Jest-99424f?style=for-the-badge&logo=jest&logoColor=white)](https://jestjs.io/)
+[![Coverage](https://img.shields.io/badge/coverage-38_tests-brightgreen?style=for-the-badge&logo=codecov&logoColor=white)](#testing)
+
 <br />
 
 <p align="center">
@@ -890,6 +895,39 @@ From your components, you interact through hooks:
 When the device comes back online, the manager either flushes the queue automatically or calls your `onOnlineRestore` callback, depending on the sync mode you chose. Each queued action is resolved through its registered handler first, then falls back to the global `onSyncAction`.
 
 Storage is abstracted behind a simple `getItem` / `setItem` / `removeItem` interface, so swapping between MMKV, AsyncStorage, Realm, or your own backend is just a config change.
+
+## Testing
+
+This package is tested with [Jest](https://jestjs.io/). All core logic is covered with unit tests.
+
+```bash
+# Run all tests
+npm test
+
+# Run in watch mode
+npm run test:watch
+
+# Run with coverage report
+npm test -- --coverage
+```
+
+### Test Coverage
+
+| Module | Tests | What's Covered |
+|--------|-------|----------------|
+| **Queue CRUD** | 8 | push, remove, clear, getQueue, unique ID generation |
+| **Subscriptions** | 2 | listener notify on change, cleanup after unsubscribe |
+| **Network Status** | 5 | initial null, setOnline, no-op on same value, snapshot |
+| **Handler Registry** | 4 | register, unregister, overwrite, unknown handler |
+| **flushQueue** | 8 | per-action > global handler, retry count, failed items persist, concurrent guard |
+| **Sync Progress** | 3 | initial state, active tracking, per-item success/fail status |
+| **Online Restore** | 4 | auto flush, manual callback, empty queue, discardQueue |
+| **Configuration** | 3 | syncMode, onSyncAction, isInitialized |
+| **Total** | **38** | |
+
+### CI
+
+Tests run automatically on every push and pull request via [GitHub Actions](https://github.com/messivite/react-native-offline-queue/actions). The CI pipeline tests against Node.js 18 and 20.
 
 ## License
 
