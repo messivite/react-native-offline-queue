@@ -73,13 +73,49 @@ cd ios && pod install
 
 ### 1. Wrap your app with `OfflineProvider`
 
+You can handle sync in two ways. Pick the one that fits your project:
+
+**Option A — Per-action handlers (recommended)**
+
+Each component defines its own API call. Provider stays clean:
+
+```tsx
+// App.tsx
+import { OfflineProvider } from 'react-native-offline-queue';
+
+export default function App() {
+  return (
+    <OfflineProvider config={{ storageType: 'mmkv', syncMode: 'auto' }}>
+      <YourApp />
+    </OfflineProvider>
+  );
+}
+```
+
+**Option B — Centralized handler**
+
+One global function handles all actions. Useful if you want a single place to manage API calls:
+
 ```tsx
 // App.tsx
 import { OfflineProvider } from 'react-native-offline-queue';
 
 const offlineConfig = {
-  storageType: 'mmkv',          // 'mmkv' | 'async-storage' | 'memory'
-  syncMode: 'manual',           // 'auto' | 'manual'
+  storageType: 'mmkv',
+  syncMode: 'auto',
+  onSyncAction: async (action) => {
+    switch (action.actionName) {
+      case 'LIKE_POST':
+        await api.likePost(action.payload);
+        break;
+      case 'CREATE_POST':
+        await api.createPost(action.payload);
+        break;
+      case 'SEND_MESSAGE':
+        await api.sendMessage(action.payload);
+        break;
+    }
+  },
 };
 
 export default function App() {
@@ -93,7 +129,9 @@ export default function App() {
 
 ### 2. Use mutations in your components
 
-Each mutation defines its own API handler. When online, the handler runs immediately. When offline, the action is queued and the handler runs later during sync.
+**With per-action handler (Option A):**
+
+Each component defines its own API call via `handler`:
 
 ```tsx
 import { useOfflineMutation } from 'react-native-offline-queue';
@@ -121,12 +159,31 @@ function LikeButton({ postId }) {
 }
 ```
 
-**How it works:**
-- **Online**: The `handler` runs immediately. No queue involved.
-- **Offline**: The action is saved to the queue, and `onOptimisticSuccess` fires so the UI updates instantly.
-- **When connectivity returns**: Queued actions are synced using their registered handlers.
+**Without handler (Option B):**
 
-> **Tip:** You can also pass a global `onSyncAction` in the provider config as a fallback for actions that don't have a per-action handler. See [Sync Strategies](#sync-strategies) below.
+If you're using a centralized `onSyncAction`, just skip the `handler` — the global function will handle it:
+
+```tsx
+function LikeButton({ postId }) {
+  const [liked, setLiked] = useState(false);
+
+  const { mutateOffline } = useOfflineMutation('LIKE_POST', {
+    onOptimisticSuccess: () => setLiked(true),
+  });
+
+  return (
+    <Button
+      title={liked ? '❤️' : '🤍'}
+      onPress={() => mutateOffline({ postId })}
+    />
+  );
+}
+```
+
+**How it works:**
+- **Online**: The handler (or `onSyncAction`) runs immediately. No queue involved.
+- **Offline**: The action is saved to the queue, and `onOptimisticSuccess` fires so the UI updates instantly.
+- **When connectivity returns**: Queued actions are synced — per-action handler first, then `onSyncAction` as fallback.
 
 ### Full Example
 
