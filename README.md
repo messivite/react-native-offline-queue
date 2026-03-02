@@ -3,7 +3,7 @@
 # 📡 react-native-offline-queue
 
 **A lightweight, high-performance offline queue and sync manager for React Native.**
-Queue operations when offline, sync automatically or manually when connectivity returns.
+Queue operations when offline, sync automatically or manually when connectivity returns. Works great with React Query (TanStack Query).
 
 <br />
 
@@ -18,6 +18,7 @@ Queue operations when offline, sync automatically or manually when connectivity 
 [![Platform - iOS](https://img.shields.io/badge/iOS-000000?style=for-the-badge&logo=apple&logoColor=white)](https://reactnative.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React Native](https://img.shields.io/badge/React_Native-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactnative.dev/)
+[![React Query](https://img.shields.io/badge/React_Query-FF4154?style=for-the-badge&logo=tanstackquery&logoColor=white)](https://tanstack.com/query/latest)
 
 <!-- Supported Storage Adapters -->
 [![MMKV](https://img.shields.io/badge/MMKV-FF6C37?style=for-the-badge&logo=firebase&logoColor=white)](https://github.com/mrousavy/react-native-mmkv)
@@ -185,6 +186,46 @@ function LikeButton({ postId }) {
 - **Offline**: The action is saved to the queue, and `onOptimisticSuccess` fires so the UI updates instantly.
 - **When connectivity returns**: Queued actions are synced — per-action handler first, then `onSyncAction` as fallback.
 
+### How API requests work (real URLs)
+
+The `handler` is where you make the **actual API call** — `fetch`, axios, or your API client. When the user presses a button:
+
+1. **Online**: `handler(payload)` runs immediately → your `fetch('https://api.myapp.com/...')` fires right away.
+2. **Offline**: `{ actionName, payload }` is stored in the queue. When connectivity returns, the queue flushes and `handler(payload)` runs for each item → your real API requests are sent.
+
+```tsx
+function CreatePostScreen() {
+  const { mutateOffline } = useOfflineMutation('CREATE_POST', {
+    handler: async (payload) => {
+      // Your real API URL — runs immediately when online, or after queue flushes when offline
+      const res = await fetch('https://api.myapp.com/v1/posts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${await getAuthToken()}`,
+        },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error(await res.text());
+    },
+    onOptimisticSuccess: () => navigation.goBack(),
+  });
+
+  return (
+    <Button
+      title="Submit"
+      onPress={() => mutateOffline({ title, body })}
+    />
+  );
+}
+```
+
+| User action | Network | What happens |
+|-------------|---------|--------------|
+| Button press | Online | `handler` runs → `fetch` fires → API receives request |
+| Button press | Offline | Action queued, `onOptimisticSuccess` fires, UI updates |
+| Connectivity restores | — | Queue flushes → each `handler` runs → real API calls sent |
+
 ### Full Example
 
 Here's what a real app looks like with multiple offline-capable actions. Each component owns its own API logic — no central switch-case needed.
@@ -263,6 +304,113 @@ function MessageBubble({ chatId }) {
 ```
 
 Each `handler` is self-contained: when the user goes offline, actions are queued with their `actionName`. When connectivity returns, the queue flushes and each action runs through its registered handler automatically.
+
+### Using with React Query (TanStack Query)
+
+If you already use React Query, this package works alongside it. The key: **share the same API function** for both React Query mutations and the offline queue handler.
+
+**Pattern 1 — Shared API layer (recommended)**
+
+Define your API calls in one place. Use them in the offline queue `handler` and optionally in React Query's `useMutation`:
+
+```tsx
+// api/posts.ts
+export async function createPost(payload: { title: string; body: string }) {
+  const res = await fetch('https://api.myapp.com/posts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+// CreatePostForm.tsx
+import { useQueryClient } from '@tanstack/react-query';
+import { useOfflineMutation } from '@mustafaaksoy41/react-native-offline-queue';
+import { createPost } from './api/posts';
+
+function CreatePostForm() {
+  const queryClient = useQueryClient();
+
+  const { mutateOffline } = useOfflineMutation('CREATE_POST', {
+    handler: async (payload) => {
+      await createPost(payload);
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+    },
+    onOptimisticSuccess: (payload) => {
+      // Add to local list immediately (optimistic update)
+      queryClient.setQueryData(['posts'], (old: any) =>
+        old ? [...old, { ...payload, id: 'temp', pending: true }] : [payload]
+      );
+    },
+  });
+
+  return (
+    <Button
+      title="Post"
+      onPress={() => mutateOffline({ title, body })}
+    />
+  );
+}
+```
+
+**Pattern 2 — Centralized `onSyncAction` with React Query**
+
+Handle all actions in one place and use `queryClient` for cache updates:
+
+```tsx
+// App.tsx
+import { useQueryClient } from '@tanstack/react-query';
+import { OfflineProvider } from '@mustafaaksoy41/react-native-offline-queue';
+import { createPost, likePost } from './api';
+
+function AppWithProviders() {
+  const queryClient = useQueryClient();
+
+  return (
+    <OfflineProvider
+      config={{
+        storageType: 'mmkv',
+        syncMode: 'auto',
+        onSyncAction: async (action) => {
+          switch (action.actionName) {
+            case 'CREATE_POST':
+              await createPost(action.payload);
+              queryClient.invalidateQueries({ queryKey: ['posts'] });
+              break;
+            case 'LIKE_POST':
+              await likePost(action.payload);
+              queryClient.invalidateQueries({ queryKey: ['posts'] });
+              break;
+          }
+        },
+      }}
+    >
+      <YourApp />
+    </OfflineProvider>
+  );
+}
+
+// Wrap with QueryClientProvider
+export default function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AppWithProviders />
+    </QueryClientProvider>
+  );
+}
+```
+
+**Summary**
+
+| What | Use |
+|------|-----|
+| API call (fetch/axios) | Same function in both `mutationFn` and `handler` |
+| Cache invalidation | `queryClient.invalidateQueries()` inside `handler` or `onSyncAction` |
+| Optimistic updates | `onOptimisticSuccess` + `queryClient.setQueryData()` |
+
+React Query handles **queries** (reading data). This package handles **mutations when offline** (queue + sync). They work together.
 
 ## Configuration
 

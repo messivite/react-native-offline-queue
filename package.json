@@ -1,7 +1,7 @@
 {
   "name": "@mustafaaksoy41/react-native-offline-queue",
   "version": "0.1.2",
-  "description": "A flexible, high-performance offline queue and synchronizer for React Native.",
+  "description": "A flexible, high-performance offline queue and synchronizer for React Native. Works great with React Query (TanStack Query).",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
   "types": "lib/typescript/index.d.ts",
@@ -23,7 +23,9 @@
     "offline",
     "queue",
     "sync",
-    "hook"
+    "hook",
+    "react-query",
+    "tanstack-query"
   ],
   "author": "Mustafa Aksoy",
   "license": "MIT",
