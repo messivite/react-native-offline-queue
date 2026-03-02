@@ -1,0 +1,133 @@
+name: Release to npm
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version bump type'
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - prepatch
+          - preminor
+          - premajor
+          - prerelease
+      dry_run:
+        description: 'Dry run (skip actual publish)'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      # --- Tag-based release (git push tag) ---
+      - name: Extract version from tag
+        if: github.event_name == 'push'
+        id: tag_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
+
+      - name: Verify tag matches package.json
+        if: github.event_name == 'push'
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          TAG_VERSION="${{ steps.tag_version.outputs.VERSION }}"
+          if [ "$PKG_VERSION" != "$TAG_VERSION" ]; then
+            echo "::error::Tag version (v$TAG_VERSION) does not match package.json ($PKG_VERSION)"
+            exit 1
+          fi
+
+      - name: Publish (tag-based)
+        if: github.event_name == 'push'
+        run: |
+          TAG_VERSION="${{ steps.tag_version.outputs.VERSION }}"
+          if [[ "$TAG_VERSION" == *"-"* ]]; then
+            npm publish --tag next
+          else
+            npm publish
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # --- Manual release (workflow_dispatch) ---
+      - name: Configure git
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version
+        if: github.event_name == 'workflow_dispatch'
+        id: bump
+        run: |
+          NEW_VERSION=$(npm version ${{ inputs.version }} --no-git-tag-version)
+          echo "NEW_VERSION=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          echo "Bumped to $NEW_VERSION"
+
+      - name: Rebuild with new version
+        if: github.event_name == 'workflow_dispatch'
+        run: npm run build
+
+      - name: Publish (manual)
+        if: github.event_name == 'workflow_dispatch' && inputs.dry_run == false
+        run: |
+          VERSION="${{ steps.bump.outputs.NEW_VERSION }}"
+          if [[ "$VERSION" == *"-"* ]]; then
+            npm publish --tag next
+          else
+            npm publish
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Dry run publish
+        if: github.event_name == 'workflow_dispatch' && inputs.dry_run == true
+        run: npm publish --dry-run
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Commit version bump & create tag
+        if: github.event_name == 'workflow_dispatch' && inputs.dry_run == false
+        run: |
+          git add package.json package-lock.json
+          git commit -m "chore: release ${{ steps.bump.outputs.NEW_VERSION }}"
+          git tag "${{ steps.bump.outputs.NEW_VERSION }}"
+          git push origin HEAD --tags
+
+      - name: Create GitHub Release
+        if: inputs.dry_run != true
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event_name == 'push' && github.ref_name || steps.bump.outputs.NEW_VERSION }}
+          name: ${{ github.event_name == 'push' && github.ref_name || steps.bump.outputs.NEW_VERSION }}
+          generate_release_notes: true
+          prerelease: ${{ contains(steps.bump.outputs.NEW_VERSION || github.ref_name, '-') }}
