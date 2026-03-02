@@ -10,8 +10,8 @@ Queue operations when offline, sync automatically or manually when connectivity 
 <!-- Package Info -->
 [![npm version](https://img.shields.io/npm/v/@mustafaaksoy41/react-native-offline-queue?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/@mustafaaksoy41/react-native-offline-queue)
 [![npm downloads](https://img.shields.io/npm/dm/@mustafaaksoy41/react-native-offline-queue?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/@mustafaaksoy41/react-native-offline-queue)
-[![license](https://img.shields.io/npm/l/@mustafaaksoy41/react-native-offline-queue?style=for-the-badge&logo=opensourceinitiative&logoColor=white&color=3DA639)](https://github.com/mustafaaksoy41/react-native-offline-queue/blob/main/LICENSE)
-[![bundle size](https://img.shields.io/bundlephobia/minzip/@mustafaaksoy41/react-native-offline-queue?style=for-the-badge&logo=webpack&logoColor=white&color=8DD6F9&label=size)](https://bundlephobia.com/package/@mustafaaksoy41/react-native-offline-queue)
+[![license](https://img.shields.io/npm/l/@mustafaaksoy41/react-native-offline-queue?style=for-the-badge&logo=opensourceinitiative&logoColor=white&color=3DA639)](https://github.com/messivite/react-native-offline-queue/blob/main/LICENSE)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/%40mustafaaksoy41%2Freact-native-offline-queue?style=for-the-badge&logo=webpack&logoColor=white&color=8DD6F9&label=size)](https://bundlephobia.com/package/@mustafaaksoy41/react-native-offline-queue)
 
 <!-- Platform & Language -->
 [![Platform - Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://reactnative.dev/)
