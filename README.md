@@ -5,13 +5,13 @@
 **A lightweight, high-performance offline queue and sync manager for React Native.**
 Queue operations when offline, sync automatically or manually when connectivity returns. Works great with React Query (TanStack Query).
 
-📖 **[Full Documentation](https://messivite.github.io/react-native-offline-queue/)** · [GitHub](https://github.com/messivite/react-native-offline-queue) · [npm](https://www.npmjs.com/package/@mustafaaksoy41/react-native-offline-queue)
+📖 <a href="https://messivite.github.io/react-native-offline-queue/" target="_blank" rel="noopener noreferrer"><strong>Full Documentation</strong></a> · <a href="https://github.com/messivite/react-native-offline-queue" target="_blank" rel="noopener noreferrer">GitHub</a> · <a href="https://www.npmjs.com/package/@mustafaaksoy41/react-native-offline-queue" target="_blank" rel="noopener noreferrer">npm</a>
 
 <br />
 
 <!-- Package Info -->
 [![npm version](https://img.shields.io/npm/v/@mustafaaksoy41/react-native-offline-queue?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/@mustafaaksoy41/react-native-offline-queue)
-[![docs](https://img.shields.io/badge/docs-VitePress-646CFF?style=for-the-badge&logo=vitepress&logoColor=white)](https://messivite.github.io/react-native-offline-queue/)
+<a href="https://messivite.github.io/react-native-offline-queue/" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/docs-VitePress-646CFF?style=for-the-badge&logo=vitepress&logoColor=white" alt="docs"></a>
 [![npm downloads](https://img.shields.io/npm/dm/@mustafaaksoy41/react-native-offline-queue?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/@mustafaaksoy41/react-native-offline-queue)
 [![license](https://img.shields.io/npm/l/@mustafaaksoy41/react-native-offline-queue?style=for-the-badge&logo=opensourceinitiative&logoColor=white&color=3DA639)](https://github.com/messivite/react-native-offline-queue/blob/main/LICENSE)
 [![bundle size](https://img.shields.io/bundlephobia/minzip/%40mustafaaksoy41%2Freact-native-offline-queue?style=for-the-badge&logo=webpack&logoColor=white&color=8DD6F9&label=size)](https://bundlephobia.com/package/@mustafaaksoy41/react-native-offline-queue)

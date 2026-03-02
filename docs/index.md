@@ -15,6 +15,7 @@ hero:
     - theme: alt
       text: View on GitHub
       link: https://github.com/messivite/react-native-offline-queue
+      target: _blank
 
 features:
   - icon: ⚡

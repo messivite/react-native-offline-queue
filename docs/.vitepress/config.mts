@@ -21,7 +21,7 @@ export default defineConfig({
         text: 'v0.1.4',
         items: [
           { text: 'Changelog', link: '/changelog' },
-          { text: 'npm', link: 'https://www.npmjs.com/package/@mustafaaksoy41/react-native-offline-queue' },
+          { text: 'npm', link: 'https://www.npmjs.com/package/@mustafaaksoy41/react-native-offline-queue', target: '_blank', rel: 'noopener noreferrer' },
         ],
       },
     ],
@@ -76,9 +76,9 @@ export default defineConfig({
       ],
     },
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/messivite/react-native-offline-queue' },
-      { icon: 'npm', link: 'https://www.npmjs.com/~mustafaaksoy41' },
-      { icon: 'linkedin', link: 'https://www.linkedin.com/in/mustafa-aksoy-87532a385/' },
+      { icon: 'github', link: 'https://github.com/messivite/react-native-offline-queue', target: '_blank', rel: 'noopener noreferrer' },
+      { icon: 'npm', link: 'https://www.npmjs.com/~mustafaaksoy41', target: '_blank', rel: 'noopener noreferrer' },
+      { icon: 'linkedin', link: 'https://www.linkedin.com/in/mustafa-aksoy-87532a385/', target: '_blank', rel: 'noopener noreferrer' },
     ],
     search: {
       provider: 'local',
@@ -90,6 +90,8 @@ export default defineConfig({
     editLink: {
       pattern: 'https://github.com/messivite/react-native-offline-queue/edit/main/docs/:path',
       text: 'Edit this page on GitHub',
+      target: '_blank',
+      rel: 'noopener noreferrer',
     },
   },
 })
