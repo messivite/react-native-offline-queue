@@ -14,19 +14,13 @@ export function useOfflineMutation<TPayload>(
   const handlerRef = useRef(options?.handler);
   handlerRef.current = options?.handler;
 
-  // Register per-action handler
+  // Register per-action handler (persists even after unmount)
   useEffect(() => {
     if (handlerRef.current) {
       OfflineManager.registerHandler(actionName, (payload: any) =>
         handlerRef.current!(payload)
       );
     }
-    return () => {
-      // Only unregister if we were the ones who registered
-      if (handlerRef.current) {
-        OfflineManager.unregisterHandler(actionName);
-      }
-    };
   }, [actionName]);
 
   const mutateOffline = async (payload: TPayload) => {
