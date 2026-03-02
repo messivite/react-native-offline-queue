@@ -16,7 +16,7 @@ export default defineConfig({
     nav: [
       { text: 'Guide', link: '/guide/getting-started' },
       { text: 'API', link: '/api/hooks' },
-      { text: 'Examples', link: '/examples/basic' },
+      { text: 'Examples', link: '/examples/minimal' },
       {
         text: 'v0.1.4',
         items: [
@@ -65,12 +65,13 @@ export default defineConfig({
       ],
       '/examples/': [
         {
-          text: 'Examples',
+          text: 'Examples (Simple → Advanced)',
           items: [
-            { text: 'Basic Usage', link: '/examples/basic' },
-            { text: 'React Query', link: '/examples/react-query' },
-            { text: 'With Realm', link: '/examples/realm' },
-            { text: 'Background Sync', link: '/examples/background' },
+            { text: '1. Minimal — 5 Minutes', link: '/examples/minimal' },
+            { text: '2. Basic — Full Featured', link: '/examples/basic' },
+            { text: '3. React Query', link: '/examples/react-query' },
+            { text: '4. Realm Storage', link: '/examples/realm' },
+            { text: '5. Background Sync', link: '/examples/background' },
           ],
         },
       ],
