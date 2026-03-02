@@ -1,4 +1,8 @@
 import { defineConfig } from 'vitepress'
+import { readFileSync } from 'fs'
+import { join } from 'path'
+
+const pkg = JSON.parse(readFileSync(join(__dirname, '../../package.json'), 'utf-8'))
 
 export default defineConfig({
   title: 'React Native Offline Queue',
@@ -18,7 +22,7 @@ export default defineConfig({
       { text: 'API', link: '/api/hooks' },
       { text: 'Examples', link: '/examples/minimal' },
       {
-        text: 'v0.1.4',
+        text: `v${pkg.version}`,
         items: [
           { text: 'Changelog', link: '/changelog' },
           { text: 'npm', link: 'https://www.npmjs.com/package/@mustafaaksoy41/react-native-offline-queue', target: '_blank', rel: 'noopener noreferrer' },
