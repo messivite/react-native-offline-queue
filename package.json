@@ -38,7 +38,8 @@
     "type": "git",
     "url": "https://github.com/messivite/react-native-offline-queue.git"
   },
-  "homepage": "https://github.com/messivite/react-native-offline-queue#readme",
+  "homepage": "https://messivite.github.io/react-native-offline-queue/",
+  "documentation": "https://messivite.github.io/react-native-offline-queue/",
   "bugs": {
     "url": "https://github.com/messivite/react-native-offline-queue/issues"
   },
