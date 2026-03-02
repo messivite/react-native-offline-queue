@@ -21,6 +21,7 @@ export default defineConfig({
       { text: 'Guide', link: '/guide/getting-started' },
       { text: 'API', link: '/api/hooks' },
       { text: 'Examples', link: '/examples/minimal' },
+      { text: 'Example App (Video)', link: 'https://www.youtube.com/shorts/G72jW65lIno', target: '_blank', rel: 'noopener noreferrer' },
       {
         text: `v${pkg.version}`,
         items: [
@@ -71,6 +72,7 @@ export default defineConfig({
         {
           text: 'Examples (Simple → Advanced)',
           items: [
+            { text: 'Example App (Video)', link: 'https://www.youtube.com/shorts/G72jW65lIno', target: '_blank', rel: 'noopener noreferrer' },
             { text: '1. Minimal — 5 Minutes', link: '/examples/minimal' },
             { text: '2. Basic — Full Featured', link: '/examples/basic' },
             { text: '3. React Query', link: '/examples/react-query' },
