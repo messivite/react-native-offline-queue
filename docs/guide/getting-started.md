@@ -27,23 +27,12 @@ cd ios && pod install
 ### 1. Wrap your app with OfflineProvider
 
 ```tsx
+// App.tsx
 import { OfflineProvider } from '@mustafaaksoy41/react-native-offline-queue';
-
-const offlineConfig = {
-  storageType: 'mmkv',
-  syncMode: 'manual',
-  onSyncAction: async (action) => {
-    await fetch(`https://api.example.com/${action.actionName}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(action.payload),
-    });
-  },
-};
 
 export default function App() {
   return (
-    <OfflineProvider config={offlineConfig}>
+    <OfflineProvider config={{ storageType: 'mmkv', syncMode: 'auto' }}>
       <YourApp />
     </OfflineProvider>
   );
@@ -52,33 +41,46 @@ export default function App() {
 
 ### 2. Use mutations in your components
 
+Each mutation defines its own API handler. When online, the handler runs immediately. When offline, the action is queued and the handler runs during sync.
+
 ```tsx
 import { useOfflineMutation } from '@mustafaaksoy41/react-native-offline-queue';
 
 function LikeButton({ postId }) {
   const [liked, setLiked] = useState(false);
 
-  const { mutateOffline } = useOfflineMutation('LIKE_POST', {
+  const { mutateOffline, isLoading, isQueued } = useOfflineMutation('LIKE_POST', {
+    handler: async (payload) => {
+      await fetch('https://api.example.com/likes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+    },
     onOptimisticSuccess: () => setLiked(true),
   });
 
   return (
     <Button
-      title={liked ? '❤️' : '🤍'}
+      title={isLoading ? '⏳' : isQueued ? '📡' : liked ? '❤️' : '🤍'}
       onPress={() => mutateOffline({ postId })}
+      disabled={isLoading}
     />
   );
 }
 ```
 
-### How it works
+### What happens
 
-- **Online**: The API call executes immediately. No queue involved.
-- **Offline**: The action is saved to the queue, and `onOptimisticSuccess` fires so the UI updates instantly.
-- **When connectivity returns**: Queued actions are synced based on your `syncMode`.
+| User action | Network | Result |
+|-------------|---------|--------|
+| Button press | Online | `handler` runs → API call fires → `onOptimisticSuccess` |
+| Button press | Offline | Action queued → `onOptimisticSuccess` → UI updates instantly |
+| Connectivity restores | — | Queue flushes → each `handler` runs → real API calls sent |
 
 ## Next Steps
 
-- [How It Works](/guide/how-it-works) — Architecture overview
+- [How It Works](/guide/how-it-works) — What happens under the hood
+- [Sync Strategies](/guide/sync-strategies) — Per-action handlers vs global onSyncAction
+- [React Query Integration](/guide/react-query) — Using mutateAsync inside handlers
 - [Storage Adapters](/guide/storage-adapters) — MMKV vs AsyncStorage vs Realm
-- [Sync Modes](/guide/sync-modes) — Auto vs Manual

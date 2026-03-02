@@ -18,7 +18,10 @@
     "build": "bob build",
     "test": "jest",
     "test:watch": "jest --watch",
-    "postinstall": "echo '\\n📦 @mustafaaksoy41/react-native-offline-queue installed!\\n⚠️  Required peer: npm install @react-native-community/netinfo\\n💡 Optional peers: react-native-mmkv | @react-native-async-storage/async-storage | realm\\n'"
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
+    "postinstall": "echo '\\n📦 react-native-offline-queue installed!\\n⚠️  Required peer: npm install @react-native-community/netinfo\\n💡 Optional peers: react-native-mmkv | @react-native-async-storage/async-storage | realm\\n'"
   },
   "keywords": [
     "react-native",

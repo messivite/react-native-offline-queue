@@ -2,10 +2,14 @@ import { defineConfig } from 'vitepress'
 
 export default defineConfig({
   title: 'React Native Offline Queue',
-  description: 'Offline-first queue and sync manager for React Native',
+  description: 'Offline-first queue and sync manager for React Native. Works great with React Query.',
   base: '/react-native-offline-queue/',
   head: [
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }],
+    ['meta', { name: 'theme-color', content: '#6366f1' }],
+    ['meta', { property: 'og:type', content: 'website' }],
+    ['meta', { property: 'og:title', content: 'React Native Offline Queue' }],
+    ['meta', { property: 'og:description', content: 'Offline-first queue and sync manager for React Native' }],
   ],
   themeConfig: {
     logo: '/logo.svg',
@@ -14,7 +18,7 @@ export default defineConfig({
       { text: 'API', link: '/api/hooks' },
       { text: 'Examples', link: '/examples/basic' },
       {
-        text: 'v0.1.0',
+        text: 'v0.1.4',
         items: [
           { text: 'Changelog', link: '/changelog' },
           { text: 'npm', link: 'https://www.npmjs.com/package/@mustafaaksoy41/react-native-offline-queue' },
@@ -31,8 +35,9 @@ export default defineConfig({
           ],
         },
         {
-          text: 'Configuration',
+          text: 'Core Concepts',
           items: [
+            { text: 'Sync Strategies', link: '/guide/sync-strategies' },
             { text: 'Storage Adapters', link: '/guide/storage-adapters' },
             { text: 'Sync Modes', link: '/guide/sync-modes' },
             { text: 'Online Restore UI', link: '/guide/online-restore' },
@@ -41,6 +46,7 @@ export default defineConfig({
         {
           text: 'Advanced',
           items: [
+            { text: 'React Query Integration', link: '/guide/react-query' },
             { text: 'Background Sync', link: '/guide/background-sync' },
             { text: 'Sync Progress', link: '/guide/sync-progress' },
           ],
@@ -62,6 +68,7 @@ export default defineConfig({
           text: 'Examples',
           items: [
             { text: 'Basic Usage', link: '/examples/basic' },
+            { text: 'React Query', link: '/examples/react-query' },
             { text: 'With Realm', link: '/examples/realm' },
             { text: 'Background Sync', link: '/examples/background' },
           ],
@@ -69,17 +76,19 @@ export default defineConfig({
       ],
     },
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/nicepaytr/react-native-offline-queue' },
+      { icon: 'github', link: 'https://github.com/messivite/react-native-offline-queue' },
+      { icon: 'npm', link: 'https://www.npmjs.com/~mustafaaksoy41' },
+      { icon: 'linkedin', link: 'https://www.linkedin.com/in/mustafa-aksoy-87532a385/' },
     ],
     search: {
       provider: 'local',
     },
     footer: {
       message: 'Released under the MIT License.',
-      copyright: 'Copyright © 2026 Mustafa Aksoy',
+      copyright: 'Made with ❤️ by <a href="https://www.npmjs.com/~mustafaaksoy41" target="_blank">Mustafa Aksoy</a> · <a href="https://github.com/messivite" target="_blank">GitHub</a> · <a href="https://www.linkedin.com/in/mustafa-aksoy-87532a385/" target="_blank">LinkedIn</a>',
     },
     editLink: {
-      pattern: 'https://github.com/nicepaytr/react-native-offline-queue/edit/main/docs/:path',
+      pattern: 'https://github.com/messivite/react-native-offline-queue/edit/main/docs/:path',
       text: 'Edit this page on GitHub',
     },
   },
