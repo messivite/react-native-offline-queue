@@ -1,6 +1,42 @@
-# react-native-offline-queue
+<div align="center">
 
-A lightweight, high-performance offline queue and sync manager for React Native. Queue operations when offline, sync automatically or manually when connectivity returns.
+# 📡 react-native-offline-queue
+
+**A lightweight, high-performance offline queue and sync manager for React Native.**
+Queue operations when offline, sync automatically or manually when connectivity returns.
+
+<br />
+
+<!-- Package Info -->
+[![npm version](https://img.shields.io/npm/v/react-native-offline-queue?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/react-native-offline-queue)
+[![npm downloads](https://img.shields.io/npm/dm/react-native-offline-queue?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/react-native-offline-queue)
+[![license](https://img.shields.io/npm/l/react-native-offline-queue?style=for-the-badge&logo=opensourceinitiative&logoColor=white&color=3DA639)](https://github.com/messivite/react-native-offline-queue/blob/main/LICENSE)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/react-native-offline-queue?style=for-the-badge&logo=webpack&logoColor=white&color=8DD6F9&label=size)](https://bundlephobia.com/package/react-native-offline-queue)
+
+<!-- Platform & Language -->
+[![Platform - Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://reactnative.dev/)
+[![Platform - iOS](https://img.shields.io/badge/iOS-000000?style=for-the-badge&logo=apple&logoColor=white)](https://reactnative.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React Native](https://img.shields.io/badge/React_Native-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactnative.dev/)
+
+<!-- Supported Storage Adapters -->
+[![MMKV](https://img.shields.io/badge/MMKV-FF6C37?style=for-the-badge&logo=firebase&logoColor=white)](https://github.com/mrousavy/react-native-mmkv)
+[![AsyncStorage](https://img.shields.io/badge/AsyncStorage-764ABC?style=for-the-badge&logo=redux&logoColor=white)](https://react-native-async-storage.github.io/async-storage/)
+[![Realm](https://img.shields.io/badge/Realm-39477F?style=for-the-badge&logo=realm&logoColor=white)](https://www.mongodb.com/docs/realm/sdk/react-native/)
+[![In Memory](https://img.shields.io/badge/In_Memory-00C853?style=for-the-badge&logo=databricks&logoColor=white)](#storage-adapters)
+
+<!-- Core Dependency -->
+[![NetInfo](https://img.shields.io/badge/NetInfo-0088CC?style=for-the-badge&logo=wifi&logoColor=white)](https://github.com/react-native-netinfo/react-native-netinfo)
+
+<br />
+
+<p align="center">
+  <b>🔌 Offline-First</b> · <b>⚡ Optimistic UI</b> · <b>🔄 Auto / Manual Sync</b> · <b>📦 Pluggable Storage</b> · <b>📊 Live Progress</b>
+</p>
+
+---
+
+</div>
 
 ## Features
 
