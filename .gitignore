@@ -45,3 +45,7 @@ __coverage__/
 # Misc
 *.tgz
 .cache/
+
+# VitePress
+docs/.vitepress/cache/
+docs/.vitepress/dist/
