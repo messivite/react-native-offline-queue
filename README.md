@@ -60,6 +60,14 @@ Queue operations when offline, sync automatically or manually when connectivity 
 - **Customizable restore UI** — Alert, Toast, BottomSheet, or silent — you decide
 - **Background task compatible** — use `OfflineManager.flushQueue()` from any context
 
+## Example App (Video)
+
+A demo app showing offline mutations, optimistic UI updates, and auto-sync when connectivity returns.
+
+[![Example App Demo](https://img.youtube.com/vi/G72jW65lIno/hqdefault.jpg)](https://www.youtube.com/shorts/G72jW65lIno)
+
+*Tap the thumbnail to watch on YouTube*
+
 ## Network Status
 
 The most basic thing: know if the user is online or offline. Use this anywhere in your app — only the component that reads `isOnline` re-renders when it changes.

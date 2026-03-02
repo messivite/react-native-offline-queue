@@ -2,7 +2,56 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.1.4] - 2026-03-02
+## [0.1.9] - 2025-03-02
+
+### Added
+- Example App video — thumbnail + link in README, docs homepage, nav, and sidebar
+- Examples section overhaul — Minimal → Basic → React Query → Realm → Background (simple to advanced)
+
+### Changed
+- Docs header version now reads from `package.json` (auto-sync)
+- External links open in new tab (README, docs nav, sidebar, edit links)
+- Examples sidebar: "Example App (Video)" as first item
+
+### Fixed
+- License copyright year (2024-2025)
+
+## [0.1.8] - 2025-03-02
+
+### Added
+- Minimal example — 5-minute getting started
+- GitHub Pages deploy workflow for documentation
+- `@rollup/rollup-linux-x64-gnu` optional dependency for docs build on CI
+
+### Changed
+- package.json `homepage` and `documentation` point to docs URL
+- Examples ordered from simple to advanced with step-by-step explanations
+
+## [0.1.7] - 2025-03-02
+
+### Changed
+- README and documentation updates
+
+## [0.1.6] - 2025-03-02
+
+### Added
+- GitHub Actions workflow for deploying docs to GitHub Pages
+- Docs link and badge in README
+
+### Fixed
+- VitePress build on Linux CI (rollup optional deps)
+
+## [0.1.5] - 2025-03-02
+
+### Added
+- VitePress documentation site
+- Getting Started, API Reference, Examples, Changelog pages
+
+### Fixed
+- `npm ci` on CI — `search-insights` added to package-lock.json
+- package-lock.json synced with package.json
+
+## [0.1.4] - 2025-03-02
 
 ### Added
 - Per-action handler registry — define API calls per mutation instead of a central switch-case
@@ -22,7 +71,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Handler persistence — per-action handlers survive component unmount
 
-## [0.1.0] - 2026-02-28
+## [0.1.0] - 2025-02-28
 
 ### Added
 - Initial release

@@ -5,6 +5,9 @@ hero:
   name: React Native Offline Queue
   text: Offline-first sync for React Native
   tagline: Queue mutations when offline, sync seamlessly when back online. Per-action handlers, React Query support, and zero unnecessary re-renders.
+  image:
+    src: https://img.youtube.com/vi/G72jW65lIno/hqdefault.jpg
+    alt: Example App Demo
   actions:
     - theme: brand
       text: Get Started →
@@ -39,4 +42,9 @@ features:
   - icon: 🔋
     title: Zero Re-renders
     details: All hooks built on useSyncExternalStore. No Context cascading — only the component reading the value re-renders.
+  - icon: 🎬
+    title: Example App (Video)
+    details: Watch the demo — offline mutations, optimistic UI, auto-sync when connectivity returns.
+    link: https://www.youtube.com/shorts/G72jW65lIno
+    linkText: Watch on YouTube
 ---
