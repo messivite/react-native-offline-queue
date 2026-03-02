@@ -10,6 +10,9 @@ hero:
       text: Get Started →
       link: /guide/getting-started
     - theme: alt
+      text: Examples
+      link: /examples/minimal
+    - theme: alt
       text: API Reference
       link: /api/hooks
     - theme: alt
