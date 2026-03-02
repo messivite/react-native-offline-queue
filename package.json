@@ -1,0 +1,71 @@
+{
+  "name": "react-native-offline-queue",
+  "version": "0.1.0",
+  "description": "A flexible, high-performance offline queue and synchronizer for React Native.",
+  "main": "lib/commonjs/index.js",
+  "module": "lib/module/index.js",
+  "types": "lib/typescript/index.d.ts",
+  "react-native": "src/index.ts",
+  "source": "src/index.ts",
+  "files": [
+    "src",
+    "lib",
+    "!**/__tests__",
+    "!**/__fixtures__",
+    "!**/__mocks__"
+  ],
+  "scripts": {
+    "build": "bob build",
+    "postinstall": "echo '\\n📦 react-native-offline-queue installed!\\n⚠️  Required peer: npm install @react-native-community/netinfo\\n💡 Optional peers: react-native-mmkv | @react-native-async-storage/async-storage | realm\\n'"
+  },
+  "keywords": [
+    "react-native",
+    "offline",
+    "queue",
+    "sync",
+    "hook"
+  ],
+  "author": "Mustafa Aksoy",
+  "license": "MIT",
+  "peerDependencies": {
+    "react": "*",
+    "react-native": "*",
+    "@react-native-community/netinfo": "*",
+    "react-native-mmkv": "*",
+    "@react-native-async-storage/async-storage": "*",
+    "realm": "*"
+  },
+  "peerDependenciesMeta": {
+    "react-native-mmkv": {
+      "optional": true
+    },
+    "@react-native-async-storage/async-storage": {
+      "optional": true
+    },
+    "realm": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@react-native-community/netinfo": "^11.0.0",
+    "@types/react": "^18.2.6",
+    "react": "18.2.0",
+    "react-native": "0.73.4",
+    "react-native-builder-bob": "^0.30.0",
+    "typescript": "^5.0.2"
+  },
+  "react-native-builder-bob": {
+    "source": "src",
+    "output": "lib",
+    "targets": [
+      "commonjs",
+      "module",
+      [
+        "typescript",
+        {
+          "project": "tsconfig.build.json"
+        }
+      ]
+    ]
+  }
+}

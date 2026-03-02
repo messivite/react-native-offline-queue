@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+
+# Build output (react-native-builder-bob)
+lib/
+
+# TypeScript
+*.tsbuildinfo
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE / Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Package manager lock files (optional for libraries)
+# Uncomment if you don't want to commit lock files:
+# package-lock.json
+# yarn.lock
+
+# Coverage & Testing
+coverage/
+.jest/
+__coverage__/
+
+# Turborepo
+.turbo/
+
+# Misc
+*.tgz
+.cache/
