@@ -455,32 +455,21 @@ interface SyncProgressItem {
 }
 ```
 
-## Architecture
+## How It Works
 
-```
-┌─────────────────────────────────────────────┐
-│                  Your App                    │
-│                                             │
-│  useOfflineMutation ──┐                     │
-│  useOfflineQueue ─────┤                     │
-│  useSyncProgress ─────┤                     │
-│  useNetworkStatus ────┤                     │
-│                       ▼                     │
-│              OfflineProvider                │
-│              (NetInfo listener)             │
-└───────────────┬─────────────────────────────┘
-                │
-                ▼
-        OfflineManager (singleton)
-        ┌──────────────────────┐
-        │  Queue (in-memory)   │
-        │  ┌────────────────┐  │
-        │  │ StorageAdapter │  │  ← MMKV / AsyncStorage / Memory
-        │  └────────────────┘  │
-        │  flushQueue()        │  ← Calls onSyncAction for each item
-        │  handleOnlineRestore │  ← auto: flush / manual: callback
-        └──────────────────────┘
-```
+The whole thing is built around a single `OfflineManager` singleton. Think of it as the brain — it holds the queue in memory, persists it through whichever storage adapter you pick, and handles the sync logic.
+
+`OfflineProvider` wraps your app and wires everything up: it listens for connectivity changes via NetInfo, configures the manager with your settings, and exposes the queue state to hooks.
+
+From your components, you interact through hooks:
+
+- **`useOfflineMutation`** — pushes actions to the queue (or calls the API directly if online)
+- **`useOfflineQueue`** — reads the current queue state without unnecessary re-renders
+- **`useSyncProgress`** — gives you per-item progress during a sync session
+
+When the device comes back online, the manager either flushes the queue automatically or calls your `onOnlineRestore` callback, depending on the sync mode you chose. Each queued action goes through your `onSyncAction` handler one by one.
+
+Storage is abstracted behind a simple `getItem` / `setItem` / `removeItem` interface, so swapping between MMKV, AsyncStorage, Realm, or your own backend is just a config change.
 
 ## License
 
