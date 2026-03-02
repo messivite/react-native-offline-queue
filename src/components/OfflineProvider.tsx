@@ -1,22 +1,26 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
+import { useSyncExternalStore } from 'react';
 import NetInfo from '@react-native-community/netinfo';
 import { OfflineManager, type OfflineManagerConfig } from '../core/OfflineManager';
 
-interface OfflineContextValue {
-    isOnline: boolean | null;
+// ─── useNetworkStatus (useSyncExternalStore — zero unnecessary re-renders) ───
+export function useNetworkStatus() {
+    const isOnline = useSyncExternalStore(
+        OfflineManager.subscribeNetwork,
+        OfflineManager.getNetworkSnapshot,
+        OfflineManager.getNetworkSnapshot
+    );
+
+    return { isOnline };
 }
 
-const OfflineContext = createContext<OfflineContextValue>({ isOnline: true });
-
-export const useNetworkStatus = () => useContext(OfflineContext);
-
+// ─── OfflineProvider ───
 export interface OfflineProviderProps {
     children: React.ReactNode;
     config: OfflineManagerConfig;
 }
 
 export const OfflineProvider: React.FC<OfflineProviderProps> = ({ children, config }) => {
-    const [isOnline, setIsOnline] = useState<boolean | null>(null);
     const wasOfflineRef = useRef(false);
 
     useEffect(() => {
@@ -28,7 +32,8 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({ children, conf
             const connected = !!state.isConnected;
             if (__DEV__) console.log('[OfflineQueue] Network:', connected ? 'online' : 'offline', '| type:', state.type);
 
-            setIsOnline(connected);
+            // Update the singleton — only notifies listeners if value actually changed
+            OfflineManager.setOnline(connected);
 
             if (!connected) {
                 wasOfflineRef.current = true;
@@ -44,9 +49,6 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({ children, conf
         return () => unsubscribe();
     }, []);
 
-    return (
-        <OfflineContext.Provider value={{ isOnline }}>
-            {children}
-        </OfflineContext.Provider>
-    );
+    // No context provider needed — useNetworkStatus reads from OfflineManager directly
+    return <>{children}</>;
 };

@@ -46,9 +46,36 @@ Queue operations when offline, sync automatically or manually when connectivity 
 - **Flexible sync modes** — `auto` (silent sync) or `manual` (prompt the user)
 - **Pluggable storage** — MMKV, AsyncStorage, or bring your own adapter
 - **Live sync progress** — track each item as it syncs (pending → syncing → success/failed)
-- **Zero unnecessary renders** — built on `useSyncExternalStore`
+- **Zero unnecessary re-renders** — all hooks built on `useSyncExternalStore`, no Context-based cascading
+- **Mutation state tracking** — `isLoading`, `isQueued`, `isSuccess`, `isError` per mutation
+- **React Query compatible** — use `mutateAsync` inside handlers
 - **Customizable restore UI** — Alert, Toast, BottomSheet, or silent — you decide
 - **Background task compatible** — use `OfflineManager.flushQueue()` from any context
+
+## Network Status
+
+The most basic thing: know if the user is online or offline. Use this anywhere in your app — only the component that reads `isOnline` re-renders when it changes.
+
+```tsx
+import { useNetworkStatus } from '@mustafaaksoy41/react-native-offline-queue';
+
+function ConnectionBanner() {
+  const { isOnline } = useNetworkStatus();
+
+  if (isOnline === null) return null; // still detecting
+  if (isOnline) return null;          // online, nothing to show
+
+  return (
+    <View style={{ backgroundColor: '#ff4444', padding: 8 }}>
+      <Text style={{ color: 'white', textAlign: 'center' }}>
+        📴 You are offline. Changes will sync when you’re back online.
+      </Text>
+    </View>
+  );
+}
+```
+
+> **No re-renders:** `useNetworkStatus` is built on `useSyncExternalStore`. It reads from a singleton store, not React Context. Components that don't call this hook are completely unaffected by connectivity changes.
 
 ## Installation
 
@@ -581,11 +608,27 @@ const { queue, pendingCount, isSyncing, syncNow, clearQueue } = useOfflineQueue(
 
 ### `useNetworkStatus()`
 
-Simple connectivity status.
+Reactive connectivity status. Built on `useSyncExternalStore` — only re-renders when the value actually changes. No Context, no cascading re-renders.
 
 ```tsx
-const { isOnline } = useNetworkStatus();
+import { useNetworkStatus } from '@mustafaaksoy41/react-native-offline-queue';
+
+function MyComponent() {
+  const { isOnline } = useNetworkStatus();
+
+  return (
+    <View>
+      <Text>Status: {isOnline === null ? 'Detecting...' : isOnline ? '✅ Online' : '📴 Offline'}</Text>
+    </View>
+  );
+}
 ```
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `isOnline` | `boolean \| null` | `true` = online, `false` = offline, `null` = not yet detected |
+
+> **Re-render guarantee:** If your component doesn't call `useNetworkStatus()`, it will **never** re-render due to connectivity changes. This is by design — we use a subscriber pattern instead of React Context.
 
 ### `useSyncProgress()`
 

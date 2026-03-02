@@ -46,6 +46,9 @@ class OfflineManagerClass {
   // Progress listeners (for useSyncProgress)
   private progressListeners: Set<() => void> = new Set();
 
+  // Network status listeners (for useNetworkStatus / useSyncExternalStore)
+  private networkListeners: Set<() => void> = new Set();
+
   // Per-action handler registry
   private actionHandlers: Map<string, (payload: any) => Promise<void>> = new Map();
 
@@ -54,6 +57,28 @@ class OfflineManagerClass {
   public onSyncAction?: (action: OfflineAction) => Promise<void>;
   public onOnlineRestore?: OfflineManagerConfig['onOnlineRestore'];
   public isSyncing = false;
+
+  // ─── Network Status State ───
+  private _isOnline: boolean | null = null;
+
+  public get isOnline(): boolean | null {
+    return this._isOnline;
+  }
+
+  public setOnline(online: boolean) {
+    if (this._isOnline === online) return; // no change, no re-render
+    this._isOnline = online;
+    this.networkListeners.forEach((l) => l());
+  }
+
+  public subscribeNetwork = (listener: () => void): (() => void) => {
+    this.networkListeners.add(listener);
+    return () => this.networkListeners.delete(listener);
+  };
+
+  public getNetworkSnapshot = (): boolean | null => {
+    return this._isOnline;
+  };
 
   // ─── Sync Progress State ───
   private _syncProgress: SyncProgress = { ...INITIAL_SYNC_PROGRESS };
