@@ -1,5 +1,5 @@
 {
-  "name": "react-native-offline-queue",
+  "name": "@mustafaaksoy41/react-native-offline-queue",
   "version": "0.1.2-beta.0",
   "description": "A flexible, high-performance offline queue and synchronizer for React Native.",
   "main": "lib/commonjs/index.js",
@@ -16,7 +16,7 @@
   ],
   "scripts": {
     "build": "bob build",
-    "postinstall": "echo '\\n📦 react-native-offline-queue installed!\\n⚠️  Required peer: npm install @react-native-community/netinfo\\n💡 Optional peers: react-native-mmkv | @react-native-async-storage/async-storage | realm\\n'"
+    "postinstall": "echo '\\n📦 @mustafaaksoy41/react-native-offline-queue installed!\\n⚠️  Required peer: npm install @react-native-community/netinfo\\n💡 Optional peers: react-native-mmkv | @react-native-async-storage/async-storage | realm\\n'"
   },
   "keywords": [
     "react-native",

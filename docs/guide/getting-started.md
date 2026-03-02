@@ -3,7 +3,7 @@
 ## Installation
 
 ```bash
-npm install react-native-offline-queue
+npm install @mustafaaksoy41/react-native-offline-queue
 
 # Required peer dependency
 npm install @react-native-community/netinfo
@@ -27,7 +27,7 @@ cd ios && pod install
 ### 1. Wrap your app with OfflineProvider
 
 ```tsx
-import { OfflineProvider } from 'react-native-offline-queue';
+import { OfflineProvider } from '@mustafaaksoy41/react-native-offline-queue';
 
 const offlineConfig = {
   storageType: 'mmkv',
@@ -53,7 +53,7 @@ export default function App() {
 ### 2. Use mutations in your components
 
 ```tsx
-import { useOfflineMutation } from 'react-native-offline-queue';
+import { useOfflineMutation } from '@mustafaaksoy41/react-native-offline-queue';
 
 function LikeButton({ postId }) {
   const [liked, setLiked] = useState(false);

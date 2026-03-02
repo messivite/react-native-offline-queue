@@ -81,7 +81,7 @@ const realm = await Realm.open({
 Implement the `StorageAdapter` interface:
 
 ```tsx
-import type { StorageAdapter } from 'react-native-offline-queue';
+import type { StorageAdapter } from '@mustafaaksoy41/react-native-offline-queue';
 
 const myStorage: StorageAdapter = {
   getItem: async (key) => { /* return string | null */ },
@@ -95,7 +95,7 @@ const myStorage: StorageAdapter = {
 Or for databases, use `RecordStorageAdapter`:
 
 ```tsx
-import type { RecordStorageAdapter } from 'react-native-offline-queue';
+import type { RecordStorageAdapter } from '@mustafaaksoy41/react-native-offline-queue';
 
 const myDbAdapter: RecordStorageAdapter = {
   insert: async (action) => { /* INSERT one record */ },

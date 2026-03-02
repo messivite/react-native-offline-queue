@@ -6,7 +6,7 @@ This package doesn't manage background tasks — that's platform-specific. But `
 
 ```tsx
 import BackgroundFetch from 'react-native-background-fetch';
-import { OfflineManager } from 'react-native-offline-queue';
+import { OfflineManager } from '@mustafaaksoy41/react-native-offline-queue';
 
 BackgroundFetch.configure({
   minimumFetchInterval: 15,
@@ -26,7 +26,7 @@ BackgroundFetch.configure({
 
 ```tsx
 import * as TaskManager from 'expo-task-manager';
-import { OfflineManager } from 'react-native-offline-queue';
+import { OfflineManager } from '@mustafaaksoy41/react-native-offline-queue';
 
 TaskManager.defineTask('OFFLINE_SYNC', async () => {
   await OfflineManager.configure({

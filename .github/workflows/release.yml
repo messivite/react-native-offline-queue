@@ -71,9 +71,9 @@ jobs:
         run: |
           TAG_VERSION="${{ steps.tag_version.outputs.VERSION }}"
           if [[ "$TAG_VERSION" == *"-"* ]]; then
-            npm publish --tag next
+            npm publish --access public --tag next
           else
-            npm publish
+            npm publish --access public
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -102,16 +102,16 @@ jobs:
         run: |
           VERSION="${{ steps.bump.outputs.NEW_VERSION }}"
           if [[ "$VERSION" == *"-"* ]]; then
-            npm publish --tag next
+            npm publish --access public --tag next
           else
-            npm publish
+            npm publish --access public
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Dry run publish
         if: github.event_name == 'workflow_dispatch' && inputs.dry_run == true
-        run: npm publish --dry-run
+        run: npm publish --access public --dry-run
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 

@@ -8,10 +8,10 @@ Queue operations when offline, sync automatically or manually when connectivity 
 <br />
 
 <!-- Package Info -->
-[![npm version](https://img.shields.io/npm/v/react-native-offline-queue?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/react-native-offline-queue)
-[![npm downloads](https://img.shields.io/npm/dm/react-native-offline-queue?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/react-native-offline-queue)
-[![license](https://img.shields.io/npm/l/react-native-offline-queue?style=for-the-badge&logo=opensourceinitiative&logoColor=white&color=3DA639)](https://github.com/messivite/react-native-offline-queue/blob/main/LICENSE)
-[![bundle size](https://img.shields.io/bundlephobia/minzip/react-native-offline-queue?style=for-the-badge&logo=webpack&logoColor=white&color=8DD6F9&label=size)](https://bundlephobia.com/package/react-native-offline-queue)
+[![npm version](https://img.shields.io/npm/v/@mustafaaksoy41/react-native-offline-queue?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/@mustafaaksoy41/react-native-offline-queue)
+[![npm downloads](https://img.shields.io/npm/dm/@mustafaaksoy41/react-native-offline-queue?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/@mustafaaksoy41/react-native-offline-queue)
+[![license](https://img.shields.io/npm/l/@mustafaaksoy41/react-native-offline-queue?style=for-the-badge&logo=opensourceinitiative&logoColor=white&color=3DA639)](https://github.com/mustafaaksoy41/react-native-offline-queue/blob/main/LICENSE)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/@mustafaaksoy41/react-native-offline-queue?style=for-the-badge&logo=webpack&logoColor=white&color=8DD6F9&label=size)](https://bundlephobia.com/package/@mustafaaksoy41/react-native-offline-queue)
 
 <!-- Platform & Language -->
 [![Platform - Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://reactnative.dev/)
@@ -52,7 +52,7 @@ Queue operations when offline, sync automatically or manually when connectivity 
 ## Installation
 
 ```bash
-npm install react-native-offline-queue
+npm install @mustafaaksoy41/react-native-offline-queue
 
 # Required peer dependency
 npm install @react-native-community/netinfo
@@ -81,7 +81,7 @@ Each component defines its own API call. Provider stays clean:
 
 ```tsx
 // App.tsx
-import { OfflineProvider } from 'react-native-offline-queue';
+import { OfflineProvider } from '@mustafaaksoy41/react-native-offline-queue';
 
 export default function App() {
   return (
@@ -98,7 +98,7 @@ One global function handles all actions. Useful if you want a single place to ma
 
 ```tsx
 // App.tsx
-import { OfflineProvider } from 'react-native-offline-queue';
+import { OfflineProvider } from '@mustafaaksoy41/react-native-offline-queue';
 
 const offlineConfig = {
   storageType: 'mmkv',
@@ -134,7 +134,7 @@ export default function App() {
 Each component defines its own API call via `handler`:
 
 ```tsx
-import { useOfflineMutation } from 'react-native-offline-queue';
+import { useOfflineMutation } from '@mustafaaksoy41/react-native-offline-queue';
 
 function LikeButton({ postId }) {
   const [liked, setLiked] = useState(false);
@@ -191,7 +191,7 @@ Here's what a real app looks like with multiple offline-capable actions. Each co
 
 ```tsx
 // App.tsx
-import { OfflineProvider } from 'react-native-offline-queue';
+import { OfflineProvider } from '@mustafaaksoy41/react-native-offline-queue';
 
 export default function App() {
   return (
@@ -204,7 +204,7 @@ export default function App() {
 
 ```tsx
 // CreatePostForm.tsx
-import { useOfflineMutation } from 'react-native-offline-queue';
+import { useOfflineMutation } from '@mustafaaksoy41/react-native-offline-queue';
 
 function CreatePostForm() {
   const { mutateOffline } = useOfflineMutation('CREATE_POST', {
@@ -435,7 +435,7 @@ const {
 `OfflineManager` is a singleton accessible from anywhere — not just React components. Useful for background tasks, service layers, or testing.
 
 ```tsx
-import { OfflineManager } from 'react-native-offline-queue';
+import { OfflineManager } from '@mustafaaksoy41/react-native-offline-queue';
 
 // Queue an action manually
 await OfflineManager.push('SEND_MESSAGE', { text: 'hello' });
@@ -456,7 +456,7 @@ This package doesn't manage background tasks — that's platform-specific and de
 
 ```tsx
 import BackgroundFetch from 'react-native-background-fetch';
-import { OfflineManager } from 'react-native-offline-queue';
+import { OfflineManager } from '@mustafaaksoy41/react-native-offline-queue';
 
 BackgroundFetch.configure({
   minimumFetchInterval: 15,
@@ -507,7 +507,7 @@ This works with any background task library: `react-native-background-fetch`, `e
 Implement the `StorageAdapter` interface to use any storage backend:
 
 ```tsx
-import { OfflineProvider, type StorageAdapter } from 'react-native-offline-queue';
+import { OfflineProvider, type StorageAdapter } from '@mustafaaksoy41/react-native-offline-queue';
 
 const myStorage: StorageAdapter = {
   getItem: async (key) => { /* return string | null */ },
@@ -551,7 +551,7 @@ This automatically creates an `OfflineQueueItem` table in a dedicated `offline-q
 
 ```tsx
 import Realm from 'realm';
-import { OfflineProvider } from 'react-native-offline-queue';
+import { OfflineProvider } from '@mustafaaksoy41/react-native-offline-queue';
 
 // Your app's Realm schemas + queue schema
 const realm = await Realm.open({

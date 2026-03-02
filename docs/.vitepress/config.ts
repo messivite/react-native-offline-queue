@@ -17,7 +17,7 @@ export default defineConfig({
         text: 'v0.1.0',
         items: [
           { text: 'Changelog', link: '/changelog' },
-          { text: 'npm', link: 'https://www.npmjs.com/package/react-native-offline-queue' },
+          { text: 'npm', link: 'https://www.npmjs.com/package/@mustafaaksoy41/react-native-offline-queue' },
         ],
       },
     ],
