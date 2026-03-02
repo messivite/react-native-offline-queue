@@ -62,6 +62,9 @@
       "optional": true
     }
   },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "4.59.0"
+  },
   "devDependencies": {
     "@react-native-community/netinfo": "^11.0.0",
     "@types/jest": "^30.0.0",
