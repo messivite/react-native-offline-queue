@@ -46,6 +46,9 @@ class OfflineManagerClass {
   // Progress listeners (for useSyncProgress)
   private progressListeners: Set<() => void> = new Set();
 
+  // Per-action handler registry
+  private actionHandlers: Map<string, (payload: any) => Promise<void>> = new Map();
+
   public isInitialized = false;
   public syncMode: 'auto' | 'manual' = 'manual';
   public onSyncAction?: (action: OfflineAction) => Promise<void>;
@@ -212,14 +215,28 @@ class OfflineManagerClass {
     return this.queue;
   }
 
+  // ─── Per-Action Handler Registry ───
+  public registerHandler(actionName: string, handler: (payload: any) => Promise<void>) {
+    this.actionHandlers.set(actionName, handler);
+  }
+
+  public unregisterHandler(actionName: string) {
+    this.actionHandlers.delete(actionName);
+  }
+
+  public getHandler(actionName: string): ((payload: any) => Promise<void>) | undefined {
+    return this.actionHandlers.get(actionName);
+  }
+
   // ─── The Central Sync Mechanism (with progress tracking) ───
   public async flushQueue(): Promise<void> {
     if (this.queue.length === 0 || this.isSyncing) {
       return;
     }
 
-    if (!this.onSyncAction) {
-      console.warn('[OfflineManager] No onSyncAction configured to process the queue.');
+    const hasAnyHandler = this.onSyncAction || this.actionHandlers.size > 0;
+    if (!hasAnyHandler) {
+      console.warn('[OfflineManager] No handlers registered and no onSyncAction configured.');
       return;
     }
 
@@ -252,7 +269,15 @@ class OfflineManagerClass {
       this.updateProgressItem(action.id, { status: 'syncing' });
 
       try {
-        await this.onSyncAction(action);
+        // Per-action handler takes priority, then fallback to onSyncAction
+        const handler = this.actionHandlers.get(action.actionName);
+        if (handler) {
+          await handler(action.payload);
+        } else if (this.onSyncAction) {
+          await this.onSyncAction(action);
+        } else {
+          throw new Error(`No handler registered for action: ${action.actionName}`);
+        }
 
         // Success → remove from queue + mark in progress
         await this.remove(action.id);
