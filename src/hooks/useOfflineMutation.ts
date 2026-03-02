@@ -1,32 +1,58 @@
+import { useEffect, useRef } from 'react';
 import { OfflineManager } from '../core/OfflineManager';
 import { useNetworkStatus } from '../components/OfflineProvider';
 
 export function useOfflineMutation<TPayload>(
   actionName: string,
   options?: {
+    handler?: (payload: TPayload) => Promise<void>;
     onOptimisticSuccess?: (payload: TPayload) => void;
     onError?: (error: Error, payload: TPayload) => void;
   }
 ) {
   const { isOnline } = useNetworkStatus();
+  const handlerRef = useRef(options?.handler);
+  handlerRef.current = options?.handler;
+
+  // Register per-action handler
+  useEffect(() => {
+    if (handlerRef.current) {
+      OfflineManager.registerHandler(actionName, (payload: any) =>
+        handlerRef.current!(payload)
+      );
+    }
+    return () => {
+      // Only unregister if we were the ones who registered
+      if (handlerRef.current) {
+        OfflineManager.unregisterHandler(actionName);
+      }
+    };
+  }, [actionName]);
 
   const mutateOffline = async (payload: TPayload) => {
-    if (isOnline && OfflineManager.onSyncAction) {
+    // Resolve which handler to use: per-action handler > global onSyncAction
+    const handler = handlerRef.current || OfflineManager.getHandler(actionName);
+    const globalHandler = OfflineManager.onSyncAction;
+    const hasHandler = handler || globalHandler;
+
+    if (isOnline && hasHandler) {
       // ── ONLINE: Execute directly, skip the queue ──
       if (__DEV__) console.log(`[OfflineQueue] mutate: ${actionName} (direct)`);
       try {
-        await OfflineManager.onSyncAction({
-          id: '',
-          actionName,
-          payload,
-          createdAt: Date.now(),
-          retryCount: 0,
-        });
-        // API succeeded → trigger optimistic callback
+        if (handler) {
+          await handler(payload);
+        } else if (globalHandler) {
+          await globalHandler({
+            id: '',
+            actionName,
+            payload,
+            createdAt: Date.now(),
+            retryCount: 0,
+          });
+        }
         options?.onOptimisticSuccess?.(payload);
       } catch (error: any) {
         console.warn(`[OfflineQueue] mutate: ${actionName} failed, falling back to queue`, error);
-        // API failed even though online → fallback to queue
         await OfflineManager.push(actionName, payload);
         options?.onOptimisticSuccess?.(payload);
         options?.onError?.(error, payload);

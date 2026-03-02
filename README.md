@@ -80,15 +80,6 @@ import { OfflineProvider } from 'react-native-offline-queue';
 const offlineConfig = {
   storageType: 'mmkv',          // 'mmkv' | 'async-storage' | 'memory'
   syncMode: 'manual',           // 'auto' | 'manual'
-  onSyncAction: async (action) => {
-    // This runs for each queued item during sync.
-    // Replace with your real API calls.
-    await fetch(`https://api.example.com/${action.actionName}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(action.payload),
-    });
-  },
 };
 
 export default function App() {
@@ -102,6 +93,8 @@ export default function App() {
 
 ### 2. Use mutations in your components
 
+Each mutation defines its own API handler. When online, the handler runs immediately. When offline, the action is queued and the handler runs later during sync.
+
 ```tsx
 import { useOfflineMutation } from 'react-native-offline-queue';
 
@@ -109,6 +102,13 @@ function LikeButton({ postId }) {
   const [liked, setLiked] = useState(false);
 
   const { mutateOffline } = useOfflineMutation('LIKE_POST', {
+    handler: async (payload) => {
+      await fetch('https://api.example.com/likes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+    },
     onOptimisticSuccess: () => setLiked(true),
   });
 
@@ -122,9 +122,90 @@ function LikeButton({ postId }) {
 ```
 
 **How it works:**
-- **Online**: The API call executes immediately. No queue involved.
+- **Online**: The `handler` runs immediately. No queue involved.
 - **Offline**: The action is saved to the queue, and `onOptimisticSuccess` fires so the UI updates instantly.
-- **When connectivity returns**: Queued actions are synced based on your `syncMode`.
+- **When connectivity returns**: Queued actions are synced using their registered handlers.
+
+> **Tip:** You can also pass a global `onSyncAction` in the provider config as a fallback for actions that don't have a per-action handler. See [Sync Strategies](#sync-strategies) below.
+
+### Full Example
+
+Here's what a real app looks like with multiple offline-capable actions. Each component owns its own API logic — no central switch-case needed.
+
+```tsx
+// App.tsx
+import { OfflineProvider } from 'react-native-offline-queue';
+
+export default function App() {
+  return (
+    <OfflineProvider config={{ storageType: 'mmkv', syncMode: 'auto' }}>
+      <HomeScreen />
+    </OfflineProvider>
+  );
+}
+```
+
+```tsx
+// CreatePostForm.tsx
+import { useOfflineMutation } from 'react-native-offline-queue';
+
+function CreatePostForm() {
+  const { mutateOffline } = useOfflineMutation('CREATE_POST', {
+    handler: async (payload) => {
+      await fetch('/api/posts', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+    },
+    onOptimisticSuccess: (payload) => {
+      // Add to local list immediately
+      setPosts((prev) => [...prev, { ...payload, id: 'temp', pending: true }]);
+    },
+  });
+
+  return <Button title="Post" onPress={() => mutateOffline({ title, body })} />;
+}
+```
+
+```tsx
+// CommentSection.tsx
+function CommentSection({ postId }) {
+  const { mutateOffline } = useOfflineMutation('ADD_COMMENT', {
+    handler: async (payload) => {
+      await fetch(`/api/posts/${payload.postId}/comments`, {
+        method: 'POST',
+        body: JSON.stringify({ text: payload.text }),
+      });
+    },
+    onOptimisticSuccess: (payload) => {
+      setComments((prev) => [...prev, { text: payload.text, pending: true }]);
+    },
+  });
+
+  return <Button title="Comment" onPress={() => mutateOffline({ postId, text })} />;
+}
+```
+
+```tsx
+// MessageBubble.tsx
+function MessageBubble({ chatId }) {
+  const { mutateOffline } = useOfflineMutation('SEND_MESSAGE', {
+    handler: async (payload) => {
+      await fetch(`/api/chats/${payload.chatId}/messages`, {
+        method: 'POST',
+        body: JSON.stringify({ text: payload.text }),
+      });
+    },
+    onOptimisticSuccess: (payload) => {
+      addMessage({ text: payload.text, status: 'sending' });
+    },
+  });
+
+  return <Button title="Send" onPress={() => mutateOffline({ chatId, text: message })} />;
+}
+```
+
+Each `handler` is self-contained: when the user goes offline, actions are queued with their `actionName`. When connectivity returns, the queue flushes and each action runs through its registered handler automatically.
 
 ## Configuration
 
@@ -216,10 +297,14 @@ Omit `onOnlineRestore` entirely. Nothing happens — you handle sync manually th
 
 ### `useOfflineMutation(actionName, options?)`
 
-Queue-aware mutation hook. Calls the API directly when online, queues when offline.
+Queue-aware mutation hook. Calls the handler directly when online, queues when offline.
 
 ```tsx
 const { mutateOffline } = useOfflineMutation('CREATE_POST', {
+  handler: async (payload) => {
+    // Your API call — runs directly when online, or during sync when offline
+    await api.createPost(payload);
+  },
   onOptimisticSuccess: (payload) => {
     // Runs immediately — update your local state here
   },
@@ -230,6 +315,12 @@ const { mutateOffline } = useOfflineMutation('CREATE_POST', {
 
 mutateOffline({ title: 'Hello', body: 'World' });
 ```
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `handler` | `(payload) => Promise<void>` | API call for this specific action. Registered automatically. |
+| `onOptimisticSuccess` | `(payload) => void` | Fires immediately for instant UI updates |
+| `onError` | `(error, payload) => void` | Fires if the direct call fails while online |
 
 ### `useOfflineQueue()`
 
@@ -455,22 +546,71 @@ interface SyncProgressItem {
 }
 ```
 
+## Sync Strategies
+
+You have two ways to define how queued actions get synced. Use them together or pick one — the per-action handler always takes priority.
+
+### Per-action handler (recommended)
+
+Each mutation defines its own API call. The handler is registered automatically when the component mounts, and used during sync. This keeps the API logic next to the component that triggers it.
+
+```tsx
+const { mutateOffline } = useOfflineMutation('LIKE_POST', {
+  handler: async (payload) => {
+    await api.likePost(payload);
+  },
+});
+```
+
+### Global `onSyncAction` (fallback)
+
+A catch-all function in the provider config. Useful as a fallback, or if you prefer managing all your API calls from one place.
+
+```tsx
+<OfflineProvider config={{
+  storageType: 'mmkv',
+  syncMode: 'auto',
+  onSyncAction: async (action) => {
+    switch (action.actionName) {
+      case 'CREATE_POST':
+        await api.createPost(action.payload);
+        break;
+      case 'DELETE_COMMENT':
+        await api.deleteComment(action.payload);
+        break;
+    }
+  },
+}}>
+```
+
+### Resolution order
+
+When the queue flushes, each action is resolved like this:
+
+1. **Per-action handler** registered via `useOfflineMutation` → used if available
+2. **Global `onSyncAction`** from provider config → used as fallback
+3. **No handler found** → action fails with an error
+
 ## How It Works
 
-The whole thing is built around a single `OfflineManager` singleton. Think of it as the brain — it holds the queue in memory, persists it through whichever storage adapter you pick, and handles the sync logic.
+The whole thing is built around a single `OfflineManager` singleton. It holds the queue in memory, persists it through whichever storage adapter you pick, and handles the sync logic.
 
 `OfflineProvider` wraps your app and wires everything up: it listens for connectivity changes via NetInfo, configures the manager with your settings, and exposes the queue state to hooks.
 
 From your components, you interact through hooks:
 
-- **`useOfflineMutation`** — pushes actions to the queue (or calls the API directly if online)
+- **`useOfflineMutation`** — defines the API handler and pushes actions to the queue (or calls the handler directly if online)
 - **`useOfflineQueue`** — reads the current queue state without unnecessary re-renders
 - **`useSyncProgress`** — gives you per-item progress during a sync session
 
-When the device comes back online, the manager either flushes the queue automatically or calls your `onOnlineRestore` callback, depending on the sync mode you chose. Each queued action goes through your `onSyncAction` handler one by one.
+When the device comes back online, the manager either flushes the queue automatically or calls your `onOnlineRestore` callback, depending on the sync mode you chose. Each queued action is resolved through its registered handler first, then falls back to the global `onSyncAction`.
 
 Storage is abstracted behind a simple `getItem` / `setItem` / `removeItem` interface, so swapping between MMKV, AsyncStorage, Realm, or your own backend is just a config change.
 
 ## License
 
 MIT
+
+---
+
+<p align="center">Made with ❤️ by <a href="https://www.npmjs.com/~mustafaaksoy41">Mustafa Aksoy</a></p>
