@@ -22,6 +22,7 @@ export interface OfflineProviderProps {
 
 export const OfflineProvider: React.FC<OfflineProviderProps> = ({ children, config }) => {
     const wasOfflineRef = useRef(false);
+    const lastLoggedRef = useRef<boolean | null>(null);
 
     useEffect(() => {
         OfflineManager.configure(config);
@@ -30,7 +31,10 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({ children, conf
     useEffect(() => {
         const unsubscribe = NetInfo.addEventListener((state) => {
             const connected = !!state.isConnected;
-            if (__DEV__) console.log('[OfflineQueue] Network:', connected ? 'online' : 'offline', '| type:', state.type);
+            if (__DEV__ && lastLoggedRef.current !== connected) {
+                lastLoggedRef.current = connected;
+                console.log('[OfflineQueue] Network:', connected ? 'online' : 'offline', '| type:', state.type);
+            }
 
             // Update the singleton — only notifies listeners if value actually changed
             OfflineManager.setOnline(connected);
