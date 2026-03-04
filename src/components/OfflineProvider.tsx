@@ -31,9 +31,13 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({ children, conf
     useEffect(() => {
         const unsubscribe = NetInfo.addEventListener((state) => {
             const connected = !!state.isConnected;
-            if (__DEV__ && lastLoggedRef.current !== connected) {
-                lastLoggedRef.current = connected;
-                console.log('[OfflineQueue] Network:', connected ? 'online' : 'offline', '| type:', state.type);
+            if (__DEV__) {
+                if (lastLoggedRef.current === null) {
+                    lastLoggedRef.current = connected; // ilk mount/remount — sadece init, log yok
+                } else if (lastLoggedRef.current !== connected) {
+                    lastLoggedRef.current = connected;
+                    console.log('[OfflineQueue] Network:', connected ? 'online' : 'offline', '| type:', state.type);
+                }
             }
 
             // Update the singleton — only notifies listeners if value actually changed
