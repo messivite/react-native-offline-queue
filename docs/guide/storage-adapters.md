@@ -5,6 +5,10 @@
 | Adapter | Install | Limits | Best For |
 |---------|---------|--------|----------|
 | **MMKV** | `npm i react-native-mmkv` | ~unlimited (file-backed). Per-value performance drops above ~256KB. | Small-to-medium queues (<1000 items). Fastest read/write. |
+
+::: info MMKV v4
+This package uses `createMMKV()` (react-native-mmkv v4 API). If you are on v3, upgrade: `npm i react-native-mmkv@^4`.
+:::
 | **AsyncStorage** | `npm i @react-native-async-storage/async-storage` | Android: **6MB total** (default). iOS: no hard limit (SQLite). Per-value: **2MB on Android**. | Apps already using AsyncStorage. |
 | **Realm** | `npm i realm` | No practical limit. Native database. | Large queues (10,000+ items) or large payloads. |
 | **Memory** | built-in | RAM only — **lost on app kill**. | Development and testing. |
