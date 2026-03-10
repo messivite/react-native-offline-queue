@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.11] - 2026-03-10
+
+### Changed
+- **MMKV adapter (v4 API)** — Switched from `new MMKV()` to `createMMKV()` for react-native-mmkv v4 compatibility. The v3 API (`MMKV` class) was removed in v4. Requires `react-native-mmkv@^4`.
+
 ## [0.1.9] - 2025-03-02
 
 ### Added

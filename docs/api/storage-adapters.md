@@ -16,6 +16,10 @@ const adapter = getMMKVAdapter();
 Requires `react-native-mmkv` to be installed. Throws with a helpful error message if missing.
 :::
 
+::: info v4 API
+Uses `createMMKV()` (react-native-mmkv v4). The v3 API (`new MMKV()`) was removed. Use `react-native-mmkv@^4`.
+:::
+
 ### getAsyncStorageAdapter()
 
 Creates a `StorageAdapter` backed by [@react-native-async-storage/async-storage](https://github.com/react-native-async-storage/async-storage).

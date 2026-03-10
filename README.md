@@ -727,6 +727,8 @@ This works with any background task library: `react-native-background-fetch`, `e
 | **AsyncStorage** | `npm i @react-native-async-storage/async-storage` | Android: **6MB total** (default). iOS: no hard limit (SQLite). Per-value: **2MB on Android**. | Apps that already use AsyncStorage. |
 | **Memory** | built-in | RAM only — **lost on app kill**. | Development, testing, or ephemeral queues. |
 
+> **MMKV v4:** Uses `createMMKV()` (react-native-mmkv v4). If on v3, upgrade: `npm i react-native-mmkv@^4`.
+
 > **How much queue data is realistic?**
 > A typical queued action is ~200–500 bytes (JSON). So 1000 queued actions ≈ 500KB — well within limits for both MMKV and AsyncStorage.
 >

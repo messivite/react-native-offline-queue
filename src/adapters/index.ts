@@ -6,10 +6,10 @@ import type { OfflineAction } from '../core/types';
 
 export const getMMKVAdapter = (): StorageAdapter => {
   try {
-    const { MMKV } = require('react-native-mmkv');
-    const storage = new MMKV();
+    const { createMMKV } = require('react-native-mmkv');
+    const storage = createMMKV();
     return {
-      getItem: (key) => storage.getString(key) || null,
+      getItem: (key) => storage.getString(key) ?? null,
       setItem: (key, value) => storage.set(key, value),
       removeItem: (key) => storage.delete(key),
     };
